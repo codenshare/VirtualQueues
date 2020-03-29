@@ -13,11 +13,16 @@
 
         //public int PriceStarting { get; set; }
 
-        public string Image { get;  set; }
+        public string Image { get; set; }
 
-        public string Location { get;  set; }
+        public string Location { get; set; }
 
         public int Id { get; set; }
+
+        public int AvgDwellTimeInSeconds {get;set;}
+
+        public int Capacity { get; set; }
+
 
     }
 }

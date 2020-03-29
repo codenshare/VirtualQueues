@@ -26,11 +26,14 @@
 
         public async Task StartAsync(IDialogContext context)
         {
-            await context.PostAsync($"Welcome to the {Option} finder!");
+            // await context.PostAsync($"Welcome to the {Option} finder!");
 
-            var hotelsFormDialog = FormDialog.FromForm(this.BuildEntitiesForm, FormOptions.PromptInStart);
+            // var hotelsFormDialog = FormDialog.FromForm(this.BuildEntitiesForm, FormOptions.PromptInStart);
 
-            context.Call(hotelsFormDialog, this.ResumeAfterEntitiesFormDialog);
+            //  context.Call(hotelsFormDialog, this.ResumeAfterEntitiesFormDialog);
+
+            await this.ShowProducts(context);
+            context.Wait(this.MessageReceivedAsync);
 
         }
 
@@ -49,13 +52,14 @@
                 .Build();
         }
 
-        private async Task ResumeAfterEntitiesFormDialog(IDialogContext context, IAwaitable<EntitiesQuery> result)
+        // private async Task ResumeAfterEntitiesFormDialog(IDialogContext context, IAwaitable<EntitiesQuery> result)
+        protected async Task ShowProducts(IDialogContext context)
         {
             try
             {
-                var searchQuery = await result;
-                var entities = this.GetEntitiesAsync(searchQuery);
-                await context.PostAsync($"I found in total {entities.Count()} {Option}");  //hotels for your dates:
+                //var searchQuery = await result;
+                var entities = this.GetEntitiesAsync(); //searchQuery
+                //await context.PostAsync($"I found in total {entities.Count()} {Option}");  //hotels for your dates:
 
                 var resultMessage = context.MakeMessage();
                 resultMessage.AttachmentLayout = AttachmentLayoutTypes.Carousel;
@@ -77,7 +81,7 @@
                             {
                                 Title = "Queue",
                                 Type = ActionTypes.ImBack,
-                                Value = entity.Id
+                                Value = entity.Id.ToString()
                             }
                         }
                     };
@@ -102,7 +106,7 @@
             }
             finally
             {
-                context.Wait(this.MessageReceivedAsync);
+                //context.Wait(this.MessageReceivedAsync);
                 //  context.Done<object>(null);
             }
         }
@@ -112,14 +116,30 @@
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result;
-            var t = message.Text;
+            var storeID = message.Text;
+
+            ConversationStarter cS = new ConversationStarter();
+            cS.toId = message.From.Id;
+            cS.toName = message.From.Name;
+            cS.fromId = message.Recipient.Id;
+            cS.fromName = message.Recipient.Name;
+            cS.serviceUrl = message.ServiceUrl;
+            cS.channelId = message.ChannelId;
+            cS.conversationId = message.Conversation.Id;
+
+
+            QueueService qS = new QueueService();
+            var response = qS.InsertInQueue(message.From.Id, storeID, cS);
+
+            await context.PostAsync($"You are position# {response.position} in the queue and have a wait time of {response.waitimeinmins} minutes. We will text you when to come"); 
+
             context.Done<object>(null);
         }
 
 
 
 
-        private List<MultiDialogsBot.Entity> GetEntitiesAsync(EntitiesQuery searchQuery)
+        private List<MultiDialogsBot.Entity> GetEntitiesAsync() //EntitiesQuery searchQuery
         {
             var entities = new List<MultiDialogsBot.Entity>();
 
