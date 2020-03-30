@@ -129,14 +129,21 @@
 
 
             QueueService qS = new QueueService();
-            var response = qS.InsertInQueue(message.From.Id, storeID, cS);
+            var response = qS.InsertInQueue(GenerateRandomNumber(), storeID, cS);
 
-            await context.PostAsync($"You are position# {response.position} in the queue and have a wait time of {response.waitimeinmins} minutes. We will text you when to come"); 
+            await context.PostAsync($"QUEUED: You are Position # {response.position} in the queue and have an estimated wait time of {response.waitimeinmins} minutes. We will text you when to come"); 
 
             context.Done<object>(null);
         }
 
 
+        public string GenerateRandomNumber()
+        {
+            int _min = 1000;
+            int _max = 9999;
+            Random _rdm = new Random();
+            return _rdm.Next(_min, _max).ToString();
+        }
 
 
         private List<MultiDialogsBot.Entity> GetEntitiesAsync() //EntitiesQuery searchQuery

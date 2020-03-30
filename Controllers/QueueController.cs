@@ -25,21 +25,25 @@ namespace MultiDialogsBot.Controllers
 
         [HttpPost]
         // POST: api/Queue
-        public bool Post(string storeid)
+        public void Post() //string storeid
         {
             QueueService qS = new QueueService();
-            var response = qS.InviteCustomer(storeid);
-            return response;
+           
+            qS.MonitorInviteQueues();
+            qS.MonitorInStoreQueues();
+
+            //Call Monitor Queue & Invite Queue.
+
 
         }
 
 
         [HttpPost]
         // POST: api/Queue
-        public bool Post(string custid, string storeid)
+        public bool Post(string secretcode, string storeid)
         {
             QueueService qS = new QueueService();
-            var response = qS.CustomerEntersTheStore(custid,storeid);
+            var response = qS.CustomerEntersTheStore(secretcode, storeid);
             return response;
         }
 

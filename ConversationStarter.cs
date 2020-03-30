@@ -26,28 +26,33 @@ namespace MultiDialogsBot
         //This will send an adhoc message to the user
         public async Task Resume(string Notification)
         {
-            string conversationId = this.conversationId;
-            string channelId = this.channelId;
-
-            var userAccount = new ChannelAccount(toId, toName);
-            var botAccount = new ChannelAccount(fromId, fromName);
-            var connector = new ConnectorClient(new Uri(serviceUrl));
-
-            IMessageActivity message = Activity.CreateMessageActivity();
-            if (!string.IsNullOrEmpty(conversationId) && !string.IsNullOrEmpty(channelId))
+            try
             {
-                message.ChannelId = channelId;
+                string conversationId = this.conversationId;
+                string channelId = this.channelId;
+
+                var userAccount = new ChannelAccount(toId, toName);
+                var botAccount = new ChannelAccount(fromId, fromName);
+                var connector = new ConnectorClient(new Uri(serviceUrl));
+
+                IMessageActivity message = Activity.CreateMessageActivity();
+                if (!string.IsNullOrEmpty(conversationId) && !string.IsNullOrEmpty(channelId))
+                {
+                    message.ChannelId = channelId;
+                }
+                else
+                {
+                    conversationId = (await connector.Conversations.CreateDirectConversationAsync(botAccount, userAccount)).Id;
+                }
+                message.From = botAccount;
+                message.Recipient = userAccount;
+                message.Conversation = new ConversationAccount(id: conversationId);
+                message.Text = Notification;
+                message.Locale = "en-Us";
+                await connector.Conversations.SendToConversationAsync((Activity)message);
             }
-            else
-            {
-                conversationId = (await connector.Conversations.CreateDirectConversationAsync(botAccount, userAccount)).Id;
-            }
-            message.From = botAccount;
-            message.Recipient = userAccount;
-            message.Conversation = new ConversationAccount(id: conversationId);
-            message.Text = Notification;
-            message.Locale = "en-Us";
-            await connector.Conversations.SendToConversationAsync((Activity)message);
+            catch (Exception ex)
+            { }
         }
     }
 }
